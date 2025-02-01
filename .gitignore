@@ -1,0 +1,9 @@
+.vs
+x64/
+glfw-3.4/
+glm/
+
+*.sln
+*.vcxproj
+*.filters
+*.user
