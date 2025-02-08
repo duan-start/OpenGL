@@ -2,6 +2,8 @@
 x64/
 glfw-3.4/
 glm/
+dependence/GLAD/
+Light/vendor/others/
 
 *.sln
 *.vcxproj

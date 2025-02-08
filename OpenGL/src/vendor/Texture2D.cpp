@@ -35,7 +35,7 @@ Texture2D::Texture2D(const char* path,unsigned int *ID) {
  
  void Texture2D::CheckError() {
 	 if (m_data)
-	 {
+	 {  //GL_RGB,GL_RGBA,format;
 		 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, m_data);
 		 glGenerateMipmap(GL_TEXTURE_2D);
 	 }
@@ -46,3 +46,4 @@ Texture2D::Texture2D(const char* path,unsigned int *ID) {
 }
 
 Texture2D::~Texture2D() { stbi_image_free(m_data); }
+
