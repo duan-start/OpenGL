@@ -13,10 +13,6 @@
 
 unsigned int loadTexture(char const* path);
 
-
-
-
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -69,7 +65,7 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
+    glEnable(GL_DEPTH_TEST);
    glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, mouse_scrollcallback);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -146,7 +142,7 @@ int main()
    
 
  shader ObjectShader("shaders/Object/vertexShader.vs", "shaders/Object/fragmentShader.fs");
- shader lightcubeshader("shaders/Light/VertexShader.vs","shaders/Light/PixelShader.fs");
+ shader lightcubeshader("shaders/Light/VertexShader.vs","shaders/Light/fragmentShader.fs");
 
     glBindVertexArray(VAO);
  
@@ -187,22 +183,19 @@ int main()
 
         // render
         // ------
-        glEnable(GL_DEPTH_TEST);
+      
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
            
        float currentTime = glfwGetTime();
-       lightPos.x = sin(currentTime)*3.5f;
+ /*      lightPos.x = sin(currentTime)*3.5f;
        lightPos.y = cos(currentTime)*3.5f;
-       lightPos.z = sin(currentTime)*3.5f;
+       lightPos.z = sin(currentTime)*3.5f;*/
         deltaTime = currentTime - last_time;
        last_time = currentTime;
 
-       glm::vec3 lightColor;
-       lightColor.x = sin(glfwGetTime() * 2.0f);
-       lightColor.y = sin(glfwGetTime() * 0.7f);
-       lightColor.z = sin(glfwGetTime() * 1.3f);
-
+       glm::vec3 lightColor(1.0f,1.0f,1.0f);
+       
        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
        glm::mat4 projection = glm::mat4(1.0f);
@@ -225,7 +218,17 @@ int main()
        ObjectShader.setVec3("light.ambient", ambientColor);
        ObjectShader.setVec3("light.diffuse", diffuseColor);
        ObjectShader.setVec3("light.specular",glm::vec3( 1.0f, 1.0f, 1.0f));
-       ObjectShader.setVec3("light.position", lightPos);
+
+       ObjectShader.setFloat("light.constant", 1.0f);
+       ObjectShader.setFloat("light.linear", 0.09f);
+       ObjectShader.setFloat("light.quadratic", 0.032f);
+
+       ObjectShader.setVec3("light.position", cameraPos);
+       ObjectShader.setVec3("light.SpotDir", cameraFront);
+       ObjectShader.setFloat("light.cutoff", glm::cos(glm::radians(12.5f)));
+       ObjectShader.setFloat("light.outercutoff", glm::cos(glm::radians(17.5f)));
+       //glm::mat4 model(1.0f);
+       //ObjectShader.setMatrix4fv("model", glm::value_ptr(model));
 
        glActiveTexture(GL_TEXTURE0);
        glBindTexture(GL_TEXTURE_2D, Texture);
@@ -245,7 +248,7 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-       lightcubeshader.use();
+    /*   lightcubeshader.use();
        glm::mat4 model = glm::mat4(1.0f);
        model = glm::translate(model, lightPos);
        model = glm::scale(model, glm::vec3(0.2f));
@@ -254,7 +257,7 @@ int main()
        lightcubeshader.setMatrix4fv("view", glm::value_ptr(view));
        lightcubeshader.setMatrix4fv("projection", glm::value_ptr(projection));
        glBindVertexArray(lightVAO);
-       glDrawArrays(GL_TRIANGLES, 0, 36);
+       glDrawArrays(GL_TRIANGLES, 0, 36);*/
 
        
  

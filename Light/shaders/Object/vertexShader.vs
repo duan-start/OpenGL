@@ -14,7 +14,7 @@ uniform mat4 model;
 void main(){
 Normal =  mat3(transpose(inverse(model)))*aNormal;
 //这是在世界坐标的写法，如果是观察坐标的，则需要进行一个view变换，使摄像机永远处于原点的位置
-FragPos = aPos;
+FragPos =vec3(model*vec4(aPos,1.0f));
 TexCoords=Textcord;
 gl_Position =projection*view*model*vec4(aPos,1.0f);
 
