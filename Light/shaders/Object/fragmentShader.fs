@@ -51,7 +51,7 @@ void main () {
 
     if (theta > light.outercutoff) {  
         float diff = max(dot(norm, lightDir), 0.0);  
-        vec3 diffuse =intensity *attenuation * light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;  
+        vec3 diffuse =3*intensity *attenuation * light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;  
 
         // Specular×é¼þ  
         vec3 viewDir = normalize(viewPos - FragPos);  
