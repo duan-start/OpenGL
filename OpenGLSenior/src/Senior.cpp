@@ -56,8 +56,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+
 	//data
     float vertices[] = {
         // positions          // texture Coords
@@ -150,11 +149,16 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     unsigned int floorTexture = loadTexture("./vendor/get.png");
 
     shader Shader("./src/shaders/VertexShader.vs","./src/shaders/PixelShader.fs");
-
+    shader LineShader("./src/shaders/VertexShader.vs", "./src/shaders/line.fs");
+    
     Shader.use();
     Shader.setInt("texture1", 0);
-  
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
@@ -163,6 +167,10 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
         deltaTime = currentFrame - last_time;
         last_time = currentFrame;
 
+        //DEPTH TEST
+
+     
+
         // input
         // -----
         processInput(window);
@@ -170,9 +178,23 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
         // render
         // ------
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         Shader.use();
+        //glStencilMask(0x00);
+        //不允许写入地板的模板缓冲，注释掉没有任何关系，只是说后面我们又会重新更新一遍，所以这边起始没有必要
+        // floor
+        glBindVertexArray(planeVAO);
+
+        glBindTexture(GL_TEXTURE_2D, floorTexture);
+        Shader.setMatrix4fv("model", (float*)glm::value_ptr(glm::mat4(1.0f)));
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        
+        //设置模板缓冲,允许写入
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
+
+        //parameter
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -189,14 +211,32 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
         Shader.setMatrix4fv("model", glm::value_ptr(model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        // floor
-        glBindVertexArray(planeVAO);
-        
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        Shader.setMatrix4fv("model",(float*)glm::value_ptr(glm::mat4(1.0f)));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        //second，不允许写入，允许比较
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+        LineShader.use();
+         model = glm::mat4(1.0f);
+        LineShader.setMatrix4fv("view", glm::value_ptr(view));
+        LineShader.setMatrix4fv("projection", glm::value_ptr(projection));
+        // cubes
+        glBindVertexArray(cubeVAO);
+        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+        model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
+        LineShader.setMatrix4fv("model", glm::value_ptr(model));
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
+        LineShader.setMatrix4fv("model", glm::value_ptr(model));
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
+        //设置回默认值
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glEnable(GL_DEPTH_TEST);
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
