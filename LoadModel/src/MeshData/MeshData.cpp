@@ -1,12 +1,8 @@
 #include "MeshData.h"
 
-Mesh::Mesh(vector<Vertex> vertex, vector<Texture> texture, vector<unsigned int> indices)
+Mesh::Mesh(vector<Vertex> vertex, vector<Texture> texture, vector<unsigned int> indices):
+    m_indices(indices),m_textures(texture),m_vertex(vertex)
 {
-	//先搜集数据
-	this->m_indices = indices;
-	this->m_textures = texture;
-	this->m_vertex = vertex;
-
 	//创建对应的缓冲区和指针属性
 	void setupMesh();
 }
@@ -38,6 +34,7 @@ void Mesh::draw(shader& Shader)
         // and finally bind the texture
         glBindTexture(GL_TEXTURE_2D, m_textures[i].id);
     }
+
     // draw mesh
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(m_indices.size()), GL_UNSIGNED_INT, 0);
@@ -45,6 +42,8 @@ void Mesh::draw(shader& Shader)
 
     // always good practice to set everything back to defaults once configured.
     glActiveTexture(GL_TEXTURE0);
+
+
 }
 
 void Mesh::setupMesh()
